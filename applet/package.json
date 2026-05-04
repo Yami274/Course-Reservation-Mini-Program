@@ -1,0 +1,8 @@
+{
+  "name": "applet",
+  "version": "1.0.0",
+  "description": "安然画室 - 艺术课程预约小程序",
+  "dependencies": {
+    "pinia": "^2.1.7"
+  }
+}

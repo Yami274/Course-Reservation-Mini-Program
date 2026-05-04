@@ -1,0 +1,500 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap');
+@import './variables.css';
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.admin-root {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.adm-side {
+  width: 232px;
+  min-width: 232px;
+  background: var(--paper-2);
+  border-right: 0.5px dashed rgba(42, 37, 32, 0.18);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 14px 18px;
+  overflow-y: auto;
+}
+
+.adm-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--paper);
+}
+
+.adm-top {
+  height: 60px;
+  min-height: 60px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 0.5px solid var(--line);
+  background: var(--paper-2);
+}
+
+.adm-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 28px 32px;
+}
+
+/* ── Cards ── */
+.adm-card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 0.5px solid var(--line);
+}
+
+.stat-card {
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-num {
+  font-family: "Fraunces", serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin-top: 8px;
+  line-height: 1.1;
+}
+
+/* ── Table ── */
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.adm-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 11px 14px;
+  border-bottom: 0.5px solid var(--line);
+  white-space: nowrap;
+}
+
+.adm-table td {
+  padding: 13px 14px;
+  border-bottom: 0.5px solid var(--line-2);
+  vertical-align: middle;
+}
+
+.adm-table tr:last-child td {
+  border-bottom: none;
+}
+
+.adm-table tr:hover td {
+  background: rgba(42, 37, 32, 0.015);
+}
+
+/* ── Buttons ── */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 0.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  line-height: 1;
+  transition: opacity 0.15s, background 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.adm-btn:hover { opacity: 0.8; }
+.adm-btn svg { width: 14px; height: 14px; fill: none; flex-shrink: 0; }
+
+.adm-btn.primary {
+  background: var(--primary);
+  color: #FFFCF5;
+  border: none;
+}
+
+.adm-btn.sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+.adm-btn.ghost {
+  background: transparent;
+}
+
+.adm-btn.danger {
+  color: var(--berry);
+  border-color: rgba(160, 71, 63, 0.2);
+}
+
+.adm-btn.success {
+  color: var(--moss);
+  border-color: rgba(107, 127, 90, 0.2);
+}
+
+/* ── Status Pills ── */
+.st-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.st-pill::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.st-pending   { background: rgba(232,184,96,0.16);   color: #8A6520; }
+.st-approved  { background: rgba(107,127,90,0.16);   color: var(--moss); }
+.st-rejected  { background: rgba(160,71,63,0.14);    color: var(--berry); }
+.st-cancelled { background: rgba(42,37,32,0.08);     color: var(--ink-3); }
+.st-published { background: rgba(107,127,90,0.16);   color: var(--moss); }
+.st-draft     { background: rgba(42,37,32,0.08);     color: var(--ink-3); }
+.st-preparing { background: rgba(232,184,96,0.16);   color: #8A6520; }
+.st-open      { background: rgba(107,127,90,0.16);   color: var(--moss); }
+.st-full      { background: rgba(160,71,63,0.14);    color: var(--berry); }
+
+/* ── Nav ── */
+.adm-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.adm-nav-item:hover {
+  background: rgba(42, 37, 32, 0.05);
+}
+
+.adm-nav-item.active {
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+  font-weight: 600;
+}
+
+.adm-nav-badge {
+  margin-left: auto;
+  background: var(--primary);
+  color: #FFFCF5;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.adm-nav-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  flex-shrink: 0;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Tags ── */
+.adm-tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  background: rgba(42,37,32,0.06);
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* ── Avatar ── */
+.av-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFFCF5;
+  flex-shrink: 0;
+}
+
+.av-md {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFCF5;
+  flex-shrink: 0;
+}
+
+/* ── Segments ── */
+.adm-seg {
+  display: inline-flex;
+  padding: 3px;
+  background: rgba(42,37,32,0.06);
+  border-radius: 9px;
+  gap: 2px;
+}
+
+.adm-seg button {
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.adm-seg button.active {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* ── Inputs ── */
+.adm-input {
+  height: 36px;
+  padding: 0 12px;
+  background: var(--card);
+  border: 0.5px solid var(--line);
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--ink);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.adm-input:focus {
+  border-color: var(--primary);
+}
+
+.adm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--card);
+  border: 0.5px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.adm-search svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.adm-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: var(--ink);
+  flex: 1;
+  font-family: inherit;
+}
+
+.adm-search input::placeholder {
+  color: var(--ink-3);
+}
+
+/* ── Page Header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--ink-3);
+  flex: 1;
+}
+
+/* ── Grids ── */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* ── Select ── */
+.adm-select {
+  height: 36px;
+  padding: 0 10px;
+  background: var(--card);
+  border: 0.5px solid var(--line);
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--ink);
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A7E70' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.adm-select option {
+  background: var(--card);
+  color: var(--ink);
+}
+
+/* 点击时的高亮色 */
+.adm-select:focus option:checked {
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+}
+
+/* ── Divider ── */
+.adm-divider {
+  height: 0.5px;
+  background: var(--line);
+  margin: 8px 0;
+}
+
+/* ── Pagination ── */
+.adm-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  padding: 16px 0 4px;
+}
+
+.adm-pagination button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 0.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.adm-pagination button.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.adm-pagination button:hover:not(.active) {
+  background: var(--primary-soft);
+}
+
+/* ── Checkbox ── */
+.adm-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* ── Nav section label ── */
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 12px 10px 4px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(42,37,32,0.12); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(42,37,32,0.22); }

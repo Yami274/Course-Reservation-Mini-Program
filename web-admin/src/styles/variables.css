@@ -1,0 +1,18 @@
+:root {
+  --paper: #F5EDE0;
+  --paper-2: #FAF4E8;
+  --ink: #2A2520;
+  --ink-2: #5A4F44;
+  --ink-3: #8A7E70;
+  --line: rgba(42, 37, 32, 0.10);
+  --line-2: rgba(42, 37, 32, 0.06);
+  --card: #FFFCF5;
+  --primary: #D97757;
+  --primary-soft: #F2C9B5;
+  --primary-deep: #B5573A;
+  --moss: #6B7F5A;
+  --moss-soft: #C7D1B6;
+  --berry: #A0473F;
+  --sky: #7A9CB0;
+  --butter: #E8B860;
+}

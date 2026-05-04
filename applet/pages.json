@@ -1,0 +1,130 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "安然画室",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/course/list",
+			"style": {
+				"navigationBarTitleText": "课程列表",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/course/detail",
+			"style": {
+				"navigationBarTitleText": "课程详情"
+			}
+		},
+		{
+			"path": "pages/course/search",
+			"style": {
+				"navigationBarTitleText": "搜索课程"
+			}
+		},
+		{
+			"path": "pages/course/teacher",
+			"style": {
+				"navigationBarTitleText": "讲师介绍"
+			}
+		},
+		{
+			"path": "pages/order/list",
+			"style": {
+				"navigationBarTitleText": "我的预约",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/order/create",
+			"style": {
+				"navigationBarTitleText": "确认预约"
+			}
+		},
+		{
+			"path": "pages/order/detail",
+			"style": {
+				"navigationBarTitleText": "预约详情"
+			}
+		},
+		{
+			"path": "pages/order/success",
+			"style": {
+				"navigationBarTitleText": "预约成功"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mine/students",
+			"style": {
+				"navigationBarTitleText": "学员管理"
+			}
+		},
+		{
+			"path": "pages/mine/notifications",
+			"style": {
+				"navigationBarTitleText": "消息通知"
+			}
+		},
+		{
+			"path": "pages/mine/location",
+			"style": {
+				"navigationBarTitleText": "地址导航"
+			}
+		},
+		{
+			"path": "pages/mine/favorites",
+			"style": {
+				"navigationBarTitleText": "我的收藏"
+			}
+		},
+		{
+			"path": "pages/admin/dashboard",
+			"style": {
+				"navigationBarTitleText": "管理后台"
+			}
+		},
+		{
+			"path": "pages/admin/orders",
+			"style": {
+				"navigationBarTitleText": "预约审核"
+			}
+		}
+	],
+	"tabBar": {
+		"custom": true,
+		"color": "#8A7E70",
+		"selectedColor": "#D97757",
+		"backgroundColor": "#FFFCF5",
+		"borderStyle": "black",
+		"list": [
+			{ "pagePath": "pages/index/index",  "text": "首页" },
+			{ "pagePath": "pages/course/list",  "text": "课程" },
+			{ "pagePath": "pages/order/list",   "text": "预约" },
+			{ "pagePath": "pages/mine/index",   "text": "我的" }
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "安然画室",
+		"navigationBarBackgroundColor": "#FFFCF5",
+		"backgroundColor": "#F5EDE0",
+		"usingComponents": {}
+	},
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u-(.*)": "uview-plus/components/u-$1/u-$1.vue"
+		}
+	}
+}

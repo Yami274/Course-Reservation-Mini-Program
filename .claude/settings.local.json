@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(python3 -c ' *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(dir \"D:\\\\Datas\\\\Desktop\\\\小程序\")",
+      "Bash(npm install *)",
+      "Bash(npx vite *)",
+      "PowerShell(python \"D:\\\\Datas\\\\Desktop\\\\С����\\\\fix_syntax.py\")",
+      "Bash(powershell -Command \"[System.IO.File]::ReadAllText\\('index.vue', [System.Text.Encoding]::GetEncoding\\('GB2312'\\)\\)\")",
+      "Bash(powershell -Command ' *)",
+      "Bash(python -c \"import PIL; print\\('PIL available'\\)\")",
+      "Bash(python -c \"import struct, zlib; print\\('stdlib available'\\)\")",
+      "Bash(py --version)",
+      "Bash(node D:/Datas/Desktop/小程序/applet/static/tabbar/gen_icons.js)",
+      "Bash(Get-ChildItem -Path \"D:\\\\Datas\\\\Desktop\\\\小程序\" -Depth 1)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Get-ChildItem *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/api/courses?pageSize=3)",
+      "Bash(curl -s http://localhost:3000/api/courses?pageSize=2)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d['data']['list'][0], indent=2, ensure_ascii=False\\)\\)\")",
+      "Bash(curl *)",
+      "Bash(dir app\\\\icons.jsx)",
+      "PowerShell($lines = Get-Content \"D:\\\\Datas\\\\Desktop\\\\小程序\\\\applet\\\\pages\\\\course\\\\list.vue\"; for \\($i = 141; $i -lt 154; $i++\\) { Write-Output \"$i : $\\($lines[$i]\\)\" })",
+      "Bash(Select-Object -First 80)",
+      "Bash(powershell *)",
+      "Bash(n        cover: course.value.cover,' | Set-Content 'D:\\\\Datas\\\\Desktop\\\\小程序\\\\applet\\\\pages\\\\course\\\\detail.vue' -Encoding UTF8\")",
+      "Bash(python *)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-Object -First 60)"
+    ]
+  }
+}

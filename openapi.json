@@ -1,0 +1,5766 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "安然画室 · 课程预约小程序 API",
+    "version": "1.0.0",
+    "description": "线下课程介绍+预约微信小程序后端接口文档。包含用户端公开接口、用户端需登录接口、管理后台接口三部分。\n\n**认证方式**: JWT Bearer Token（Header: `Authorization: Bearer <token>`）\n\n**管理后台**: 用户名密码登录，使用 nickmame 作为用户名，默认密码为环境变量 `ADMIN_PASSWORD`（默认 `admin123`）\n\n**响应格式**: 统一为 `{ code: 0, message: \"ok\", data: {} }`\n\n**开发测试账号**: openid=dev_test_openid，无需真实微信code即可登录"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "本地开发环境"
+    },
+    {
+      "url": "https://api.anran-studio.com/api",
+      "description": "生产环境"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Token，登录后获取。用户端使用微信code登录，管理端使用用户名密码登录。"
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "业务状态码，0=成功",
+            "example": 0
+          },
+          "message": {
+            "type": "string",
+            "description": "提示信息",
+            "example": "ok"
+          },
+          "data": {
+            "nullable": true,
+            "description": "响应数据，错误时为 null"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "错误码"
+          },
+          "message": {
+            "type": "string",
+            "description": "错误描述"
+          },
+          "data": {
+            "type": "null",
+            "description": "始终为 null"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "当前页码"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "每页条数"
+          },
+          "total": {
+            "type": "integer",
+            "description": "总记录数"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "总页数"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "openid": {
+            "type": "string",
+            "description": "微信openid"
+          },
+          "nickname": {
+            "type": "string",
+            "description": "用户昵称"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像URL"
+          },
+          "phone": {
+            "type": "string",
+            "description": "手机号"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "description": "角色"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "注册时间"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "description": "分类名称"
+          },
+          "icon": {
+            "type": "string",
+            "description": "图标（Emoji或图片路径）"
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序值"
+          },
+          "parent_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "父分类ID"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Teacher": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "description": "讲师姓名"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像URL"
+          },
+          "title": {
+            "type": "string",
+            "description": "职称/头衔"
+          },
+          "intro": {
+            "type": "string",
+            "description": "简介"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "description": "地点名称"
+          },
+          "address": {
+            "type": "string",
+            "description": "详细地址"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "contact": {
+            "type": "string",
+            "description": "联系电话"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Banner": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "image": {
+            "type": "string",
+            "description": "图片URL"
+          },
+          "link_url": {
+            "type": "string",
+            "description": "跳转链接"
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序值（升序）"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "description": "状态"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Notice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string",
+            "description": "公告内容"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "description": "有效期起始"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "description": "有效期截止"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "description": "状态"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CourseSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string",
+            "description": "课程标题"
+          },
+          "cover": {
+            "type": "string",
+            "description": "封面图URL"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CourseDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "category_id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "cover": {
+            "type": "string"
+          },
+          "intro": {
+            "type": "string",
+            "description": "课程介绍（HTML富文本）"
+          },
+          "teacher_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "讲师ID数组"
+          },
+          "location_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "地点ID数组"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "courseTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseTypeWithSchedules"
+            }
+          },
+          "teachers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Teacher"
+            }
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CourseSchedule": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "course_type_id": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "上课日期"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "开始时间（HH:mm:ss）"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "结束时间（HH:mm:ss）"
+          },
+          "max_count": {
+            "type": "integer",
+            "description": "最大容量"
+          },
+          "booked_count": {
+            "type": "integer",
+            "description": "已预约人数"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "cancelled",
+              "full"
+            ],
+            "description": "时段状态"
+          },
+          "check_in_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "核销码（预留）"
+          },
+          "checked_in_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CourseType": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "course_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "description": "班型名称（如：启蒙班/进阶班）"
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "班级容量"
+          },
+          "price": {
+            "type": "number",
+            "description": "价格（预留）"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CourseTypeWithSchedules": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CourseType"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schedules": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CourseSchedule"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "description": "学员姓名"
+          },
+          "age": {
+            "type": "integer",
+            "description": "年龄"
+          },
+          "phone": {
+            "type": "string",
+            "description": "联系电话"
+          },
+          "notes": {
+            "type": "string",
+            "description": "备注"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "course_id": {
+            "type": "integer"
+          },
+          "course_type_id": {
+            "type": "integer"
+          },
+          "schedule_id": {
+            "type": "integer"
+          },
+          "student_id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "cancelled"
+            ],
+            "description": "订单状态"
+          },
+          "audit_remark": {
+            "type": "string",
+            "nullable": true,
+            "description": "审核备注"
+          },
+          "pay_status": {
+            "type": "string",
+            "enum": [
+              "unpaid",
+              "paid",
+              "refunded"
+            ],
+            "description": "支付状态（预留）"
+          },
+          "transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "course": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "title": {
+                "type": "string"
+              },
+              "cover": {
+                "type": "string"
+              }
+            }
+          },
+          "courseType": {
+            "$ref": "#/components/schemas/CourseType"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/CourseSchedule"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Student"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OrderSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "course": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "cover": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "OrderAdmin": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OrderSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "nickname": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DashboardData": {
+        "type": "object",
+        "properties": {
+          "todayOrders": {
+            "type": "integer",
+            "description": "今日新增预约数"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "description": "待审核预约数"
+          },
+          "totalStudents": {
+            "type": "integer",
+            "description": "在读学员总数"
+          },
+          "totalCourses": {
+            "type": "integer",
+            "description": "已发布课程数"
+          },
+          "trend": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "近30天预约趋势"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "未登录或 Token 无效",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "noToken": {
+                "value": {
+                  "code": 401,
+                  "message": "请先登录",
+                  "data": null
+                }
+              },
+              "expired": {
+                "value": {
+                  "code": 401,
+                  "message": "登录已过期，请重新登录",
+                  "data": null
+                }
+              },
+              "invalid": {
+                "value": {
+                  "code": 401,
+                  "message": "无效的登录凭证",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "无管理员权限",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "code": 403,
+              "message": "无管理员权限",
+              "data": null
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "资源不存在",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "code": 404,
+              "message": "资源不存在",
+              "data": null
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "认证",
+      "description": "微信小程序登录"
+    },
+    {
+      "name": "课程",
+      "description": "用户端课程浏览（公开）"
+    },
+    {
+      "name": "分类",
+      "description": "课程分类（公开）"
+    },
+    {
+      "name": "轮播图",
+      "description": "首页轮播图（公开）"
+    },
+    {
+      "name": "公告",
+      "description": "公告信息（公开）"
+    },
+    {
+      "name": "上课地点",
+      "description": "地点信息（公开）"
+    },
+    {
+      "name": "时段",
+      "description": "课程时段查询（公开）"
+    },
+    {
+      "name": "预约订单",
+      "description": "用户端预约操作（需登录）"
+    },
+    {
+      "name": "学员管理",
+      "description": "用户端学员档案（需登录）"
+    },
+    {
+      "name": "管理端-认证",
+      "description": "管理后台登录"
+    },
+    {
+      "name": "管理端-仪表盘",
+      "description": "数据统计概览"
+    },
+    {
+      "name": "管理端-课程",
+      "description": "课程/班型/时段 CRUD"
+    },
+    {
+      "name": "管理端-订单",
+      "description": "预约订单审核管理"
+    },
+    {
+      "name": "管理端-分类",
+      "description": "课程分类管理"
+    },
+    {
+      "name": "管理端-讲师",
+      "description": "讲师信息管理"
+    },
+    {
+      "name": "管理端-地点",
+      "description": "上课地点管理"
+    },
+    {
+      "name": "管理端-轮播图",
+      "description": "轮播图管理"
+    },
+    {
+      "name": "管理端-公告",
+      "description": "公告管理"
+    },
+    {
+      "name": "管理端-消息",
+      "description": "微信订阅消息推送"
+    },
+    {
+      "name": "管理端-上传",
+      "description": "文件上传"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "微信小程序登录",
+        "description": "使用微信登录code换取JWT Token。本地开发时（NODE_ENV!=production且WX_APP_ID/WX_APP_SECRET未配置），无论传什么body，均使用测试账号自动登录，返回token。Apifox调试：直接发空JSON `{}` 即可。",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "description": "wx.login()返回的临时code。开发环境不传则使用测试账号",
+                    "example": "081aBcDeFgHiJkLmN"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "description": "用户微信昵称（可选，用于更新）"
+                  },
+                  "avatar": {
+                    "type": "string",
+                    "description": "用户头像URL（可选，用于更新）"
+                  }
+                }
+              },
+              "example": {
+                "code": "081aBcDeFgHiJkLmN",
+                "nickname": "朵朵妈",
+                "avatar": "https://thirdwx.qlogo.cn/xxx"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功，返回JWT Token和用户信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "description": "JWT Access Token，后续请求放入 Authorization 头"
+                        },
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "user": {
+                      "id": 1,
+                      "openid": "dev_test_openid",
+                      "nickname": "测试用户",
+                      "avatar": "",
+                      "phone": "",
+                      "role": "user",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少登录凭证code",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "缺少登录凭证code",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "tags": [
+          "课程"
+        ],
+        "summary": "课程列表（分页+筛选+搜索）",
+        "description": "获取已发布的课程列表，支持按分类筛选和关键词搜索。",
+        "security": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数（最大100）",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "example": 10
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "description": "按分类ID筛选",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "关键词搜索（匹配课程标题）",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "课程状态筛选",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "published",
+                "draft",
+                "archived"
+              ],
+              "default": "published"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "分页课程列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CourseSummary"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "title": "Scratch 少儿编程启蒙班",
+                        "cover": "",
+                        "status": "published",
+                        "category": {
+                          "id": 1,
+                          "name": "少儿编程"
+                        },
+                        "created_at": "2026-05-01T00:00:00.000Z"
+                      }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "pageSize": 10,
+                    "totalPages": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/hot": {
+      "get": {
+        "tags": [
+          "课程"
+        ],
+        "summary": "热门课程",
+        "description": "获取已发布的最新课程（按创建时间倒序，取前N个）。",
+        "security": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "返回数量",
+            "schema": {
+              "type": "integer",
+              "default": 6,
+              "example": 6
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "热门课程列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CourseSummary"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "title": "Scratch 少儿编程启蒙班",
+                      "cover": "",
+                      "status": "published",
+                      "category": {
+                        "id": 1,
+                        "name": "少儿编程"
+                      },
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "tags": [
+          "课程"
+        ],
+        "summary": "课程详情（含分类、班型、时段、讲师、地点）",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "课程ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "课程完整信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseDetail"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "课程不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "课程不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": [
+          "分类"
+        ],
+        "summary": "全部分类列表",
+        "description": "获取所有课程分类，按sort字段升序排列。",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "分类列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "少儿编程",
+                      "icon": "/static/icons/code.png",
+                      "sort": 1,
+                      "parent_id": 0,
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    },
+                    {
+                      "id": 2,
+                      "name": "少儿美术",
+                      "icon": "/static/icons/art.png",
+                      "sort": 2,
+                      "parent_id": 0,
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/banners": {
+      "get": {
+        "tags": [
+          "轮播图"
+        ],
+        "summary": "启用的轮播图列表",
+        "description": "获取状态为active的轮播图，按sort升序排列。",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "轮播图列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Banner"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "image": "https://via.placeholder.com/750x360/FF6B6B/FFFFFF?text=暑期编程特训营",
+                      "link_url": "",
+                      "sort": 1,
+                      "status": "active",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notices": {
+      "get": {
+        "tags": [
+          "公告"
+        ],
+        "summary": "当前有效的公告",
+        "description": "获取当前日期在有效期内且状态为active的公告。",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "有效公告列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notice"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "content": "新学员首次报名可享9折优惠，欢迎咨询客服了解详情！",
+                      "start_date": "2026-05-01",
+                      "end_date": "2026-05-31",
+                      "status": "active",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations": {
+      "get": {
+        "tags": [
+          "上课地点"
+        ],
+        "summary": "全部上课地点",
+        "description": "获取所有上课地点信息。",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "地点列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Location"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "万达校区",
+                      "address": "XX市万达广场3楼301室",
+                      "latitude": 30.57226,
+                      "longitude": 104.06654,
+                      "contact": "13800138000",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedules/{id}": {
+      "get": {
+        "tags": [
+          "时段"
+        ],
+        "summary": "时段详情",
+        "description": "获取课程时段详情，包含剩余名额和关联的班型/课程信息。",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "时段ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "时段详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseSchedule"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "courseType": {
+                              "allOf": [
+                                {
+                                  "$ref": "#/components/schemas/CourseType"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "course": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "title": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "时段不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "时段不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "tags": [
+          "预约订单"
+        ],
+        "summary": "提交预约",
+        "description": "用户提交课程预约。检查时段名额（行级锁防超卖）和同一用户重复提交。成功后booked_count+1。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "course_id",
+                  "course_type_id",
+                  "schedule_id",
+                  "student_id"
+                ],
+                "properties": {
+                  "course_id": {
+                    "type": "integer",
+                    "description": "课程ID"
+                  },
+                  "course_type_id": {
+                    "type": "integer",
+                    "description": "班型ID"
+                  },
+                  "schedule_id": {
+                    "type": "integer",
+                    "description": "时段ID"
+                  },
+                  "student_id": {
+                    "type": "integer",
+                    "description": "学员ID"
+                  }
+                }
+              },
+              "example": {
+                "course_id": 1,
+                "course_type_id": 1,
+                "schedule_id": 1,
+                "student_id": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "预约提交成功，状态为pending",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "预约已提交，请等待管理员审核"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/OrderSummary"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数缺失/名额已满/重复提交",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missingParams": {
+                    "value": {
+                      "code": 400,
+                      "message": "缺少必填参数",
+                      "data": null
+                    }
+                  },
+                  "duplicate": {
+                    "value": {
+                      "code": 400,
+                      "message": "该时段您已有预约，请勿重复提交",
+                      "data": null
+                    }
+                  },
+                  "cancelled": {
+                    "value": {
+                      "code": 400,
+                      "message": "该时段已取消",
+                      "data": null
+                    }
+                  },
+                  "full": {
+                    "value": {
+                      "code": 400,
+                      "message": "名额已满",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "预约订单"
+        ],
+        "summary": "我的预约列表",
+        "description": "获取当前用户的预约订单列表，支持按状态筛选和分页。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "按状态筛选（不传返回全部）",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "分页订单列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/OrderSummary"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": [
+          "预约订单"
+        ],
+        "summary": "预约详情",
+        "description": "获取当前用户指定订单的详细信息。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "订单ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "订单完整信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "订单不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/cancel": {
+      "put": {
+        "tags": [
+          "预约订单"
+        ],
+        "summary": "取消预约",
+        "description": "用户取消自己的预约（仅pending或approved状态可取消），取消后释放名额（booked_count-1）。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "订单ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取消成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "已取消预约",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "当前状态不可取消",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "当前状态不可取消",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "订单不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students": {
+      "get": {
+        "tags": [
+          "学员管理"
+        ],
+        "summary": "我的学员列表",
+        "description": "获取当前用户添加的所有学员档案。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "学员列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Student"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "user_id": 1,
+                      "name": "朵朵",
+                      "age": 5,
+                      "phone": "13800138000",
+                      "notes": "",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "学员管理"
+        ],
+        "summary": "添加学员",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "学员姓名",
+                    "example": "朵朵"
+                  },
+                  "age": {
+                    "type": "integer",
+                    "description": "年龄",
+                    "default": 0,
+                    "example": 5
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "联系电话",
+                    "default": "",
+                    "example": "13800138000"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "备注信息",
+                    "default": "",
+                    "example": "对美术特别感兴趣"
+                  }
+                }
+              },
+              "example": {
+                "name": "朵朵",
+                "age": 5,
+                "phone": "13800138000",
+                "notes": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "添加成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "添加成功"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Student"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "姓名不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "学员姓名不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/students/{id}": {
+      "put": {
+        "tags": [
+          "学员管理"
+        ],
+        "summary": "编辑学员信息",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "学员姓名"
+                  },
+                  "age": {
+                    "type": "integer",
+                    "description": "年龄"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "联系电话"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "备注"
+                  }
+                }
+              },
+              "example": {
+                "name": "朵朵",
+                "age": 6,
+                "phone": "13800138000",
+                "notes": "已升班"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "更新成功"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Student"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "学员不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "学员不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "学员管理"
+        ],
+        "summary": "删除学员",
+        "description": "删除当前用户名下的学员档案。注意：当前后端未限制有关联预约记录的学员不可删除，实际使用中请谨慎。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "学员ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "学员不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "学员不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/login": {
+      "post": {
+        "tags": [
+          "管理端-认证"
+        ],
+        "summary": "管理后台登录",
+        "description": "使用用户名（nickname）和密码登录管理后台。默认管理员：username=admin，password=admin123（环境变量ADMIN_PASSWORD控制）。",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "管理员用户名（即用户的nickname字段，role=admin）",
+                    "example": "admin"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "管理员密码",
+                    "example": "admin123"
+                  }
+                }
+              },
+              "example": {
+                "username": "admin",
+                "password": "admin123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "description": "JWT Token"
+                        },
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "user": {
+                      "id": 1,
+                      "openid": "admin_test_openid",
+                      "nickname": "admin",
+                      "avatar": "",
+                      "phone": "",
+                      "role": "admin",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少用户名密码",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "请输入用户名和密码",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "用户名或密码错误",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 401,
+                  "message": "用户名或密码错误",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dashboard": {
+      "get": {
+        "tags": [
+          "管理端-仪表盘"
+        ],
+        "summary": "仪表盘核心数据",
+        "description": "获取管理后台仪表盘统计数据：今日订单、待审核数、学员总数、课程总数、近30天预约趋势。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "仪表盘数据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/DashboardData"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "todayOrders": 5,
+                    "pendingCount": 3,
+                    "totalStudents": 120,
+                    "totalCourses": 8,
+                    "trend": [
+                      {
+                        "date": "2026-04-01",
+                        "count": 10
+                      },
+                      {
+                        "date": "2026-04-02",
+                        "count": 8
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/courses": {
+      "get": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "课程列表（含草稿和归档）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "筛选状态",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "archived"
+              ]
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "关键词搜索课程标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "分页课程列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CourseSummary"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "创建课程",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "category_id"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "课程名称",
+                    "example": "Scratch 少儿编程启蒙班"
+                  },
+                  "category_id": {
+                    "type": "integer",
+                    "description": "分类ID",
+                    "example": 1
+                  },
+                  "cover": {
+                    "type": "string",
+                    "description": "封面图URL",
+                    "example": ""
+                  },
+                  "intro": {
+                    "type": "string",
+                    "description": "课程介绍（HTML富文本）",
+                    "example": "<h3>课程介绍</h3><p>适合6-10岁...</p>"
+                  },
+                  "teacher_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "讲师ID数组",
+                    "example": [
+                      1
+                    ]
+                  },
+                  "location_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "上课地点ID数组",
+                    "example": [
+                      1,
+                      2
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "archived"
+                    ],
+                    "description": "课程状态",
+                    "default": "draft",
+                    "example": "draft"
+                  }
+                }
+              },
+              "example": {
+                "title": "Scratch 少儿编程启蒙班",
+                "category_id": 1,
+                "cover": "",
+                "intro": "<h3>课程介绍</h3><p>适合6-10岁零基础儿童...</p>",
+                "teacher_ids": [
+                  1
+                ],
+                "location_ids": [
+                  1,
+                  2
+                ],
+                "status": "draft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "创建成功"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseDetail"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "课程名称和分类为必填",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "课程名称和分类为必填项",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/courses/{id}": {
+      "get": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "课程详情（含全部班型和时段）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "课程ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "课程完整信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseDetail"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "课程不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "课程不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "更新课程",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "课程ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "category_id": {
+                    "type": "integer"
+                  },
+                  "cover": {
+                    "type": "string"
+                  },
+                  "intro": {
+                    "type": "string"
+                  },
+                  "teacher_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "location_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "archived"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "title": "Scratch 少儿编程进阶班",
+                "status": "published"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "更新成功"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseDetail"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "课程不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "课程不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "删除课程",
+        "description": "删除课程及其关联的班型和时段。有关联订单时禁止删除。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "课程ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "存在关联订单",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "该课程存在预约订单，无法删除，请先下架",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/courses/{id}/status": {
+      "put": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "上架/下架课程",
+        "description": "修改课程状态：draft→published=上架，published→archived=归档/下架",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "课程ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "archived"
+                    ],
+                    "description": "目标状态"
+                  }
+                }
+              },
+              "example": {
+                "status": "published"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "状态更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "课程已上架",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的状态值",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "无效的状态值",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "课程不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "课程不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/courses/{courseId}/types": {
+      "post": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "添加班型",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "description": "课程ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "班型名称",
+                    "example": "启蒙班（周六上午）"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "description": "班级容量",
+                    "default": 20,
+                    "example": 15
+                  },
+                  "price": {
+                    "type": "number",
+                    "description": "价格（预留字段）",
+                    "default": 0,
+                    "example": 0
+                  }
+                }
+              },
+              "example": {
+                "name": "启蒙班（周六上午）",
+                "capacity": 15,
+                "price": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "班型添加成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "班型添加成功"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseType"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "班型名称不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "班型名称不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "课程不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "课程不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/courses/types/{id}": {
+      "put": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "编辑班型",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "班型ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "班型名称"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "description": "班级容量"
+                  },
+                  "price": {
+                    "type": "number",
+                    "description": "价格"
+                  }
+                }
+              },
+              "example": {
+                "name": "进阶班（周日下午）",
+                "capacity": 10,
+                "price": 299
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "班型更新成功",
+                  "data": {
+                    "id": 1,
+                    "name": "进阶班（周日下午）",
+                    "capacity": 10,
+                    "price": 299
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "班型不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "班型不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "删除班型（同时删除关联时段）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "班型ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "班型已删除",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/courses/types/{typeId}/schedules": {
+      "post": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "添加时段",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "required": true,
+            "description": "班型ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "date",
+                  "start_time",
+                  "end_time"
+                ],
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "上课日期",
+                    "example": "2026-05-10"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "description": "开始时间 HH:mm:ss",
+                    "example": "09:00:00"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "description": "结束时间 HH:mm:ss",
+                    "example": "11:00:00"
+                  },
+                  "max_count": {
+                    "type": "integer",
+                    "description": "最大容量",
+                    "default": 20,
+                    "example": 15
+                  }
+                }
+              },
+              "example": {
+                "date": "2026-05-10",
+                "start_time": "09:00:00",
+                "end_time": "11:00:00",
+                "max_count": 15
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "时段添加成功"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CourseSchedule"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "日期和时间为必填项",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "日期和时间为必填项",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "班型不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "班型不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/courses/schedules/{id}": {
+      "put": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "编辑时段",
+        "description": "修改时段信息。修改max_count时不能低于已预约人数。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "时段ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  },
+                  "max_count": {
+                    "type": "integer",
+                    "description": "最大容量（不能低于已预约数）"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "cancelled",
+                      "full"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "date": "2026-05-17",
+                "start_time": "10:00:00",
+                "end_time": "12:00:00"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "时段更新成功",
+                  "data": {
+                    "id": 1,
+                    "date": "2026-05-17",
+                    "start_time": "10:00:00",
+                    "end_time": "12:00:00"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "名额不能低于已预约人数",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "名额不能低于已预约人数",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "时段不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "时段不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-课程"
+        ],
+        "summary": "删除时段",
+        "description": "删除时段。已有预约时禁止删除。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "时段ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "时段已删除",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "该时段已有预约",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "该时段已有预约，无法删除",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "tags": [
+          "管理端-订单"
+        ],
+        "summary": "预约订单列表",
+        "description": "获取所有用户的预约订单，含用户、课程、班型、时段、学员信息。支持按状态筛选和分页。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "按状态筛选",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索（目前仅用于前端过滤，后端未实现搜索逻辑）",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "分页订单列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/OrderAdmin"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}": {
+      "get": {
+        "tags": [
+          "管理端-订单"
+        ],
+        "summary": "订单详情",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "订单ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "订单完整信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/OrderAdmin"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "订单不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/audit": {
+      "put": {
+        "tags": [
+          "管理端-订单"
+        ],
+        "summary": "审核订单（通过/拒绝）",
+        "description": "审核预约订单。approve→订单状态改为approved，reject→订单状态改为rejected并释放名额（booked_count-1）。仅pending状态订单可审核。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "订单ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ],
+                    "description": "操作类型"
+                  },
+                  "remark": {
+                    "type": "string",
+                    "description": "审核备注（可选）"
+                  }
+                }
+              },
+              "example": {
+                "action": "approve",
+                "remark": "审核通过，请按时参加"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "审核完成",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "approve": {
+                    "value": {
+                      "code": 0,
+                      "message": "审核通过",
+                      "data": null
+                    }
+                  },
+                  "reject": {
+                    "value": {
+                      "code": 0,
+                      "message": "已拒绝",
+                      "data": null
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "状态不允许审核/操作类型无效",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidAction": {
+                    "value": {
+                      "code": 400,
+                      "message": "操作类型无效，仅支持 approve 或 reject",
+                      "data": null
+                    }
+                  },
+                  "invalidStatus": {
+                    "value": {
+                      "code": 400,
+                      "message": "当前订单状态不允许审核",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "订单不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/cancel": {
+      "put": {
+        "tags": [
+          "管理端-订单"
+        ],
+        "summary": "管理员取消订单",
+        "description": "管理员强制取消订单（任意状态）。取消后释放名额。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "订单ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已取消",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "已取消",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "订单已取消",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "订单已取消",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "订单不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "订单不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/categories": {
+      "get": {
+        "tags": [
+          "管理端-分类"
+        ],
+        "summary": "分类列表",
+        "description": "获取所有课程分类，按sort升序排列。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "全部分类列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "管理端-分类"
+        ],
+        "summary": "创建分类",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "分类名称",
+                    "example": "少儿编程"
+                  },
+                  "icon": {
+                    "type": "string",
+                    "description": "图标（Emoji或图片路径）",
+                    "default": "",
+                    "example": "/static/icons/code.png"
+                  },
+                  "sort": {
+                    "type": "integer",
+                    "description": "排序值",
+                    "default": 0,
+                    "example": 1
+                  },
+                  "parent_id": {
+                    "type": "integer",
+                    "description": "父分类ID（0=根分类）",
+                    "default": 0,
+                    "example": 0
+                  }
+                }
+              },
+              "example": {
+                "name": "少儿编程",
+                "icon": "/static/icons/code.png",
+                "sort": 1,
+                "parent_id": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "创建成功",
+                  "data": {
+                    "id": 1,
+                    "name": "少儿编程",
+                    "icon": "/static/icons/code.png",
+                    "sort": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "分类名称不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "分类名称不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/categories/{id}": {
+      "put": {
+        "tags": [
+          "管理端-分类"
+        ],
+        "summary": "编辑分类",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "分类ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "sort": {
+                    "type": "integer"
+                  },
+                  "parent_id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "name": "少儿编程（Scratch）",
+                "sort": 2
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "更新成功",
+                  "data": {
+                    "id": 1,
+                    "name": "少儿编程（Scratch）",
+                    "sort": 2
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "分类不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "分类不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-分类"
+        ],
+        "summary": "删除分类",
+        "description": "有关联课程的分类禁止删除。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "分类ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "该分类下有课程",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "该分类下有课程，无法删除",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/teachers": {
+      "get": {
+        "tags": [
+          "管理端-讲师"
+        ],
+        "summary": "讲师列表",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "全部分讲师列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Teacher"
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "张老师",
+                      "avatar": "",
+                      "title": "资深编程讲师 / 5年教学经验",
+                      "intro": "毕业于XX大学计算机系，专注少儿编程教育...",
+                      "created_at": "2026-05-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "管理端-讲师"
+        ],
+        "summary": "创建讲师",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "讲师姓名",
+                    "example": "张老师"
+                  },
+                  "avatar": {
+                    "type": "string",
+                    "description": "头像URL",
+                    "default": ""
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "职称/头衔",
+                    "default": ""
+                  },
+                  "intro": {
+                    "type": "string",
+                    "description": "简介",
+                    "default": ""
+                  }
+                }
+              },
+              "example": {
+                "name": "张老师",
+                "avatar": "",
+                "title": "资深编程讲师 / 5年教学经验",
+                "intro": "毕业于XX大学计算机系，专注少儿编程教育，擅长Scratch和Python入门教学。"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "创建成功",
+                  "data": {
+                    "id": 1,
+                    "name": "张老师",
+                    "title": "资深编程讲师 / 5年教学经验"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "讲师姓名不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "讲师姓名不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/teachers/{id}": {
+      "put": {
+        "tags": [
+          "管理端-讲师"
+        ],
+        "summary": "编辑讲师",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "讲师ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "intro": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "name": "张老师",
+                "title": "首席编程讲师 / 10年教学经验"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "更新成功",
+                  "data": {
+                    "id": 1,
+                    "name": "张老师",
+                    "title": "首席编程讲师 / 10年教学经验"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "讲师不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "讲师不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-讲师"
+        ],
+        "summary": "删除讲师",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "讲师ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/locations": {
+      "get": {
+        "tags": [
+          "管理端-地点"
+        ],
+        "summary": "地点列表",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "全部地点列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Location"
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "管理端-地点"
+        ],
+        "summary": "创建地点",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "address"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "地点名称",
+                    "example": "万达校区"
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "详细地址",
+                    "example": "XX市万达广场3楼301室"
+                  },
+                  "latitude": {
+                    "type": "number",
+                    "description": "纬度",
+                    "default": 0,
+                    "example": 30.57226
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "description": "经度",
+                    "default": 0,
+                    "example": 104.06654
+                  },
+                  "contact": {
+                    "type": "string",
+                    "description": "联系电话",
+                    "default": "",
+                    "example": "13800138000"
+                  }
+                }
+              },
+              "example": {
+                "name": "万达校区",
+                "address": "XX市万达广场3楼301室",
+                "latitude": 30.57226,
+                "longitude": 104.06654,
+                "contact": "13800138000"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "创建成功",
+                  "data": {
+                    "id": 1,
+                    "name": "万达校区",
+                    "address": "XX市万达广场3楼301室"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "名称和地址不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "名称和地址不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/locations/{id}": {
+      "put": {
+        "tags": [
+          "管理端-地点"
+        ],
+        "summary": "编辑地点",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "地点ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "contact": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "name": "万达校区（新）",
+                "contact": "13800138001"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "更新成功",
+                  "data": {
+                    "id": 1,
+                    "name": "万达校区（新）"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "地点不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "地点不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-地点"
+        ],
+        "summary": "删除地点",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "地点ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/banners": {
+      "get": {
+        "tags": [
+          "管理端-轮播图"
+        ],
+        "summary": "轮播图列表",
+        "description": "获取所有轮播图（含非启用状态），按sort升序排列。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "全部轮播图列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Banner"
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "管理端-轮播图"
+        ],
+        "summary": "创建轮播图",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "image"
+                ],
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "description": "图片URL",
+                    "example": "https://via.placeholder.com/750x360"
+                  },
+                  "link_url": {
+                    "type": "string",
+                    "description": "跳转链接",
+                    "default": ""
+                  },
+                  "sort": {
+                    "type": "integer",
+                    "description": "排序值（升序）",
+                    "default": 0,
+                    "example": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ],
+                    "description": "状态",
+                    "default": "active",
+                    "example": "active"
+                  }
+                }
+              },
+              "example": {
+                "image": "https://via.placeholder.com/750x360/FF6B6B/FFFFFF?text=暑期编程特训营",
+                "link_url": "/pages/course/detail?id=1",
+                "sort": 1,
+                "status": "active"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "创建成功",
+                  "data": {
+                    "id": 1,
+                    "image": "https://via.placeholder.com/750x360",
+                    "sort": 1,
+                    "status": "active"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "图片地址不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "图片地址不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/banners/{id}": {
+      "put": {
+        "tags": [
+          "管理端-轮播图"
+        ],
+        "summary": "编辑轮播图",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "轮播图ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string"
+                  },
+                  "link_url": {
+                    "type": "string"
+                  },
+                  "sort": {
+                    "type": "integer",
+                    "description": "排序值（升序，值小排前面）"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "sort": 2,
+                "status": "active"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "更新成功",
+                  "data": {
+                    "id": 1,
+                    "sort": 2
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "轮播图不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "轮播图不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-轮播图"
+        ],
+        "summary": "删除轮播图",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "轮播图ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/notices": {
+      "get": {
+        "tags": [
+          "管理端-公告"
+        ],
+        "summary": "公告列表",
+        "description": "获取所有公告（含非启用状态），按创建时间倒序排列。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "全部公告列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notice"
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "管理端-公告"
+        ],
+        "summary": "创建公告",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "content",
+                  "start_date",
+                  "end_date"
+                ],
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "公告内容",
+                    "example": "五一假期排课调整..."
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "有效期起始",
+                    "example": "2026-05-01"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "有效期截止",
+                    "example": "2026-05-31"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ],
+                    "description": "状态",
+                    "default": "active",
+                    "example": "active"
+                  }
+                }
+              },
+              "example": {
+                "content": "五一假期排课调整，详情查看公告",
+                "start_date": "2026-05-01",
+                "end_date": "2026-05-06",
+                "status": "active"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "创建成功",
+                  "data": {
+                    "id": 1,
+                    "content": "五一假期排课调整...",
+                    "start_date": "2026-05-01",
+                    "end_date": "2026-05-06",
+                    "status": "active"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "内容、开始日期和结束日期不能为空",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "内容、开始日期和结束日期不能为空",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/notices/{id}": {
+      "put": {
+        "tags": [
+          "管理端-公告"
+        ],
+        "summary": "编辑公告",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "公告ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "content": "五一假期排课调整，部分课程顺延",
+                "end_date": "2026-05-07"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "更新成功",
+                  "data": {
+                    "id": 1,
+                    "content": "五一假期排课调整，部分课程顺延"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "公告不存在",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "公告不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "管理端-公告"
+        ],
+        "summary": "删除公告",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "公告ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "删除成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/messages": {
+      "post": {
+        "tags": [
+          "管理端-消息"
+        ],
+        "summary": "发送微信订阅消息",
+        "description": "向指定用户发送微信小程序订阅消息（需配置微信APPID和APPSECRET）。通常由审核操作自动触发，此接口用于手动补发。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_openid",
+                  "template_id",
+                  "data"
+                ],
+                "properties": {
+                  "user_openid": {
+                    "type": "string",
+                    "description": "接收者的微信openid",
+                    "example": "oXXXX"
+                  },
+                  "template_id": {
+                    "type": "string",
+                    "description": "微信订阅消息模板ID",
+                    "example": "wx_template_id_from_mp"
+                  },
+                  "page": {
+                    "type": "string",
+                    "description": "点击消息跳转的小程序页面路径（可选）"
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "模板消息数据，key为模板变量名，value格式: { value: '内容' }",
+                    "example": {
+                      "thing1": {
+                        "value": "色彩启蒙·小小毕加索"
+                      },
+                      "thing2": {
+                        "value": "已通过"
+                      },
+                      "time3": {
+                        "value": "2026年05月18日 09:30"
+                      },
+                      "thing4": {
+                        "value": "请提前5分钟到达"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "user_openid": "oXXXX",
+                "template_id": "wx_template_id_from_mp",
+                "page": "/pages/order/detail?id=101",
+                "data": {
+                  "thing1": {
+                    "value": "色彩启蒙·小小毕加索"
+                  },
+                  "thing2": {
+                    "value": "审核通过"
+                  },
+                  "time3": {
+                    "value": "2026年05月18日 09:30"
+                  },
+                  "thing4": {
+                    "value": "请提前5分钟到达"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "消息发送成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "消息发送成功",
+                  "data": null
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true,
+                      "description": "操作类接口成功时返回 null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少必填参数",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 400,
+                  "message": "缺少必填参数: user_openid, template_id, data",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "description": "消息发送失败",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 500,
+                  "message": "消息发送失败: invalid template_id",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/upload": {
+      "post": {
+        "tags": [
+          "管理端-上传"
+        ],
+        "summary": "文件上传",
+        "description": "上传图片文件（支持 jpg/png/gif/webp，最大 5MB）。配置了OSS则上传到OSS，否则存本地。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "图片文件（jpg/png/gif/webp，≤5MB）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功，返回文件URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "上传成功"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "文件访问URL（相对或绝对路径）"
+                        },
+                        "filename": {
+                          "type": "string",
+                          "description": "存储的文件名"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "上传成功",
+                  "data": {
+                    "url": "/uploads/2026-05/1714500000_abc123.jpg",
+                    "filename": "1714500000_abc123.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "未选择文件或格式不支持",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "noFile": {
+                    "value": {
+                      "code": 400,
+                      "message": "请选择文件",
+                      "data": null
+                    }
+                  },
+                  "invalidFormat": {
+                    "value": {
+                      "code": 400,
+                      "message": "仅支持 jpg/png/gif/webp 格式",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    }
+  }
+}
