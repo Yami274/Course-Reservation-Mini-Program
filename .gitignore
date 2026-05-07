@@ -19,7 +19,7 @@ coverage/
 .cache/
 .parcel-cache/
 .vite/
-.turbo/
+.turbo/ 
 .eslintcache
 .stylelintcache
 .idea/
