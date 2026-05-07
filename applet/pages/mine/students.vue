@@ -1,14 +1,13 @@
 <template>
   <view class="page">
-    <!-- 头部 -->
-    <view class="header" :style="{ paddingTop: statusBarHeight + 'px' }">
-      <view class="nav-bar">
-        <view class="back-btn" @tap="goBack">
-          <SvgIcon name="chevron-left" :color="'var(--ink)'" :size="28" />
-        </view>
-        <text class="nav-title">学员管理</text>
-        <view style="width: 64rpx;"></view>
+    <!-- 状态栏 + 导航栏 -->
+    <view :style="{ height: statusBarHeight + 'px' }" />
+    <view class="nav-bar">
+      <view class="back-btn" @tap="goBack">
+        <SvgIcon name="chevron-left" :color="'var(--ink)'" :size="28" />
       </view>
+      <text class="nav-title">学员管理</text>
+      <view style="width: 64rpx;" />
     </view>
 
     <scroll-view scroll-y class="scroll-content" :style="{ height: scrollHeight + 'px' }">
@@ -136,7 +135,8 @@ const editingStudent = ref(null)
 onMounted(() => {
   const info = uni.getSystemInfoSync()
   statusBarHeight.value = info.statusBarHeight || 44
-  scrollHeight.value = info.windowHeight - statusBarHeight.value - 44
+  const r = info.screenWidth / 750
+  scrollHeight.value = info.windowHeight - statusBarHeight.value - 88 * r
 })
 
 onShow(async () => {
@@ -242,15 +242,12 @@ function goBack() {
   overflow-x: hidden;
 }
 
-.header {
-  background: var(--paper-2);
-}
-
 .nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12rpx 24rpx 16rpx;
+  padding: 0 32rpx;
+  height: 88rpx;
 }
 
 .back-btn {
@@ -259,22 +256,11 @@ function goBack() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--card);
-  border-radius: 50%;
-  box-shadow: 0 2rpx 12rpx rgba(42, 37, 32, 0.08);
-}
-
-.back-icon {
-  font-size: 48rpx;
-  color: var(--ink);
-  font-weight: 300;
-  line-height: 1;
-  margin-top: -4rpx;
 }
 
 .nav-title {
   font-size: 34rpx;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 
@@ -408,7 +394,7 @@ function goBack() {
 /* 弹层 */
 .form-overlay {
   position: fixed;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: rgba(42, 37, 32, 0.5);
   z-index: 100;
   display: flex;

@@ -1,8 +1,26 @@
 // SVG icon utilities — encode icons as CSS background-image data URIs
 // Works in WeChat mini-program via background-image (image src doesn't support svg data URIs)
 
+// Base64 encoder (btoa not available in WeChat mini-program)
+const BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+function toBase64(str) {
+  var result = ''
+  var i = 0
+  var len = str.length
+  while (i < len) {
+    var a = str.charCodeAt(i++) & 0xff
+    var b = i < len ? str.charCodeAt(i++) & 0xff : NaN
+    var c = i < len ? str.charCodeAt(i++) & 0xff : NaN
+    result += BASE64_CHARS.charAt(a >> 2)
+    result += BASE64_CHARS.charAt(((a & 3) << 4) | (b >> 4))
+    result += isNaN(b) ? '=' : BASE64_CHARS.charAt(((b & 15) << 2) | (c >> 6))
+    result += isNaN(c) ? '=' : BASE64_CHARS.charAt(c & 63)
+  }
+  return result
+}
+
 function enc(svg) {
-  return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg) + '")'
+  return 'url("data:image/svg+xml;base64,' + toBase64(svg) + '")'
 }
 
 const DEFS = {
@@ -72,6 +90,15 @@ export function svgBg(name, color, filled = false, size = '32rpx') {
     display: 'inline-block',
     flexShrink: '0',
   }
+}
+
+/**
+ * Returns a base64 data URI string for use in <image src="...">.
+ */
+export function svgSrc(name, color, filled = false) {
+  const fn = DEFS[name]
+  if (!fn) return ''
+  return 'data:image/svg+xml;base64,' + toBase64(fn(color, filled))
 }
 
 export { DEFS, enc }

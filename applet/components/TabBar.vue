@@ -32,7 +32,7 @@ const tabs = [
 function switchTab(tab) {
   if (tab.key === props.active) return
   emit('switch', tab)
-  uni.switchTab({ url: tab.url })
+  uni.reLaunch({ url: tab.url })
 }
 </script>
 
@@ -46,8 +46,6 @@ function switchTab(tab) {
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
   background: rgba(255, 252, 245, 0.95);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-top: 1rpx solid rgba(42, 37, 32, 0.10);
   display: flex;
   align-items: flex-start;

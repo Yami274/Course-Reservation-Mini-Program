@@ -261,7 +261,6 @@ function callPhone(loc) {
   display: flex;
   align-items: center;
   gap: 10rpx;
-  backdrop-filter: blur(10px);
 }
 .map-label-text {
   font-size: 22rpx;

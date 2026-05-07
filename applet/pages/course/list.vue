@@ -1,5 +1,5 @@
 <template>
-  <view class="page paper-bg">
+  <view class="page paper-bg page-enter">
     <!-- 状态栏占位 -->
     <view :style="{ height: statusBarHeight + 'px' }" />
 
@@ -32,6 +32,7 @@
             <view
               v-for="(tab, i) in tabs"
               :key="tab.key"
+              :id="'ctab-' + tab.key"
               class="tab-item"
               :class="{ active: activeTab === tab.key }"
               @tap="setTab(tab.key)"
@@ -40,6 +41,7 @@
             </view>
           </view>
         </scroll-view>
+        <view class="tab-slider" :style="sliderStyle" />
       </view>
 
       <!-- 副筛选行 -->
@@ -54,11 +56,11 @@
       </view>
 
       <!-- 课程列表 -->
-      <view class="course-list">
+      <view class="course-list tab-fade" :key="activeTab">
         <view
           v-for="course in filteredCourses"
           :key="course.id"
-          class="course-card card shadow-warm"
+          class="course-card card shadow-warm stagger-item"
           @tap="toCourseDetail(course)"
         >
           <!-- 缩略图 -->
@@ -116,20 +118,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { getCourses } from '@/api/course.js'
 import { getCategories } from '@/api/home.js'
 import { normalizeCourse } from '@/utils/normalize.js'
 import SvgIcon from '@/components/SvgIcon.vue'
-import { useTabbarStore } from '@/stores/tabbar.js'
 
 onShow(() => {
-  useTabbarStore().active = 'course'
   const pending = uni.getStorageSync('pendingCategory')
   if (pending) {
     uni.removeStorageSync('pendingCategory')
     activeTab.value = pending
+    moveSlider()
   }
 })
 
@@ -141,6 +142,33 @@ const loading = ref(false)
 const allCourses = ref([])
 const tabs = ref([{ key: 'all', label: '全部' }])
 const subFilters = ['默认', '最新', '名额', '周末']
+const sliderStyle = ref({})
+
+function moveSlider() {
+  nextTick(() => {
+    uni.createSelectorQuery()
+      .select('#ctab-' + activeTab.value).boundingClientRect()
+      .select('.tab-bar-wrap').boundingClientRect()
+      .exec((res) => {
+        if (res[0] && res[1]) {
+          var tab = res[0]
+          var wrap = res[1]
+          var info = uni.getSystemInfoSync()
+          var rpxRatio = info.screenWidth / 750
+          var w = 40 * rpxRatio
+          var cx = tab.left - wrap.left + tab.width / 2
+          sliderStyle.value = {
+            left: (cx - w / 2) + 'px',
+            width: w + 'px',
+            opacity: 1,
+            transition: 'left 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.2s ease',
+          }
+        }
+      })
+  })
+}
+
+watch(activeTab, () => moveSlider())
 
 const searchIconColor = '#2A2520'
 const searchIconColor2 = '#8A7E70'
@@ -160,7 +188,7 @@ onLoad(async (options) => {
     const cats = catsRes || []
     tabs.value = [
       { key: 'all', label: '全部' },
-      ...cats.map(c => ({ key: String(c.id), label: c.name }))
+      ...cats.filter(c => c.name !== '全部').map(c => ({ key: String(c.id), label: c.name }))
     ]
   } catch(e) {
     console.error('categories error:', e)
@@ -170,6 +198,7 @@ onLoad(async (options) => {
     activeTab.value = options.category
   }
   await loadCourses()
+  moveSlider()
 })
 
 async function loadCourses() {
@@ -250,6 +279,7 @@ function toSearch() {
 
 /* 分类 Tab */
 .tab-bar-wrap {
+  position: relative;
   border-bottom: 1rpx solid var(--line);
 }
 .tab-scroll {
@@ -268,22 +298,23 @@ function toSearch() {
   font-weight: 500;
   color: var(--ink-3);
   white-space: nowrap;
+  transition: color 0.25s ease, font-weight 0.25s ease;
 
   &.active {
     font-weight: 700;
     color: var(--ink);
-    &::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      width: 36rpx;
-      height: 6rpx;
-      border-radius: 6rpx;
-      background: var(--primary);
-    }
   }
+}
+
+.tab-slider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 6rpx;
+  border-radius: 6rpx;
+  background: var(--primary);
+  pointer-events: none;
+  opacity: 0;
 }
 
 /* 副筛选 */
@@ -367,7 +398,7 @@ function toSearch() {
 
 .thumb-img {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   width: 100%;
   height: 100%;
   border-radius: inherit;

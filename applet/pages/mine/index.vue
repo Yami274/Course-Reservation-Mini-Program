@@ -1,5 +1,5 @@
 <template>
-  <view class="page paper-bg">
+  <view class="page paper-bg page-enter">
     <!-- 状态栏占位 -->
     <view :style="{ height: statusBarHeight + 'px' }" />
 
@@ -129,7 +129,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/stores/user.js'
-import { useTabbarStore } from '@/stores/tabbar.js'
 import { getOrders } from '@/api/order.js'
 import { getStudents } from '@/api/student.js'
 import { normalizeOrder } from '@/utils/normalize.js'
@@ -147,7 +146,6 @@ onMounted(() => {
 })
 
 onShow(async () => {
-  useTabbarStore().active = 'mine'
   if (!userStore.isLoggedIn) {
     try { await userStore.login() } catch(e) { console.error('auto login failed:', e) }
   }
@@ -170,8 +168,8 @@ const notificationBadge = ref(0)
 const stats = computed(() => [
   { label: '学员档案', value: String(studentCount.value), action: () => uni.navigateTo({ url: '/pages/mine/students' }) },
   { label: '已收藏',   value: String(favoriteCount.value), action: () => uni.navigateTo({ url: '/pages/mine/favorites' }) },
-  { label: '进行中',   value: String(approvedCount.value), action: () => uni.switchTab({ url: '/pages/order/list' }) },
-  { label: '已完成',   value: String(doneCount.value), action: () => uni.switchTab({ url: '/pages/order/list' }) },
+  { label: '进行中',   value: String(approvedCount.value), action: () => uni.reLaunch({ url: '/pages/index/index?tab=2' }) },
+  { label: '已完成',   value: String(doneCount.value), action: () => uni.reLaunch({ url: '/pages/index/index?tab=2' }) },
 ])
 
 const nextLesson = ref(null)
@@ -225,7 +223,7 @@ async function loadStats() {
 const mainMenuItems = computed(() => [
   {
     key: 'orders',    label: '我的预约', sub: '',              icon: 'calendar', color: '#D97757', iconBg: 'rgba(217,119,87,0.12)',
-    action: () => uni.switchTab({ url: '/pages/order/list' }),
+    action: () => uni.reLaunch({ url: '/pages/index/index?tab=2' }),
   },
   {
     key: 'students',  label: '学员档案', sub: '2 位',          icon: 'user',     color: '#6B7F5A', iconBg: 'rgba(107,127,90,0.12)',

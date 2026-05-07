@@ -25,7 +25,7 @@ async function seed() {
     { name: '硬笔书法', icon: '✍️', sort: 5 },
     { name: '陶艺',     icon: '🏺', sort: 6 },
     { name: '速写',     icon: '🖌️', sort: 7 },
-    { name: '油画',     icon: '🖼️', sort: 8 },
+    { name: '全部',     icon: '✨', sort: 8 },
   ]);
   console.log('Categories created:', categories.length);
 

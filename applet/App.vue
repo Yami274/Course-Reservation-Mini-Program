@@ -19,6 +19,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import './icon-classes.scss';
+.s-icon{background-size:contain;background-repeat:no-repeat;background-position:center;display:inline-block;flex-shrink:0}
 /* 温暖手作风设计系统 */
 /* Google Fonts 不支持在 WXSS 中以 @import url() 加载，使用系统字体回退 */
 
@@ -285,6 +287,7 @@ view, scroll-view, swiper, swiper-item, image, text, input, button, navigator {
 	background: rgba(42,37,32,0.06);
 	border-radius: 999rpx;
 	font-size: 26rpx;
+		position: relative;
 }
 .seg-btn {
 	flex: 1;
@@ -297,6 +300,7 @@ view, scroll-view, swiper, swiper-item, image, text, input, button, navigator {
 	font-family: inherit;
 	text-align: center;
 	font-size: 26rpx;
+		position: relative;
 }
 .seg-btn.active {
 	background: var(--card);

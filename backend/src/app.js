@@ -12,7 +12,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 静态文件（上传的图片等）
-app.use('/uploads', express.static('uploads'));
+const path = require('path');
+app.use('/uploads', express.static(path.resolve(__dirname, '../../uploads')));
 
 // 路由
 app.use('/api', routes);
@@ -37,8 +38,16 @@ async function start() {
     // 自动同步表结构（不强制重建，安全添加新列）
     await sequelize.sync({ alter: true });
     console.log('Database synced.');
+
+    // 数据迁移：将「油画」分类改为「全部」
+    const { Category } = require('./models');
+    const oilCat = await Category.findOne({ where: { name: '油画' } });
+    if (oilCat) {
+      await oilCat.update({ name: '全部', icon: '✨' });
+      console.log('Category "油画" renamed to "全部".');
+    }
   } catch (e) {
-    console.warn('DB sync warning (tables may already exist):', e.message);
+    console.warn('DB sync warning:', e.message);
   }
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

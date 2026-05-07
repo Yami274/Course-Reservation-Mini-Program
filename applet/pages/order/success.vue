@@ -119,11 +119,11 @@ onLoad((options) => {
 })
 
 function toOrderList() {
-  uni.switchTab({ url: '/pages/order/list' })
+  uni.reLaunch({ url: '/pages/index/index?tab=2' })
 }
 
 function toHome() {
-  uni.switchTab({ url: '/pages/index/index' })
+  uni.reLaunch({ url: '/pages/index/index' })
 }
 </script>
 

@@ -1,5 +1,15 @@
 ﻿<template>
   <view class="page">
+    <!-- 状态栏 + 导航栏 -->
+    <view :style="{ height: statusBarHeight + 'px' }" class="status-spacer" />
+    <view class="nav-bar">
+      <view class="back-btn" @tap="goBack">
+        <SvgIcon name="chevron-left" :color="'var(--ink)'" :size="28" />
+      </view>
+      <text class="nav-title">课程详情</text>
+      <view style="width: 64rpx;" />
+    </view>
+
     <!-- 渐变 banner -->
     <view class="banner" :style="{ background: course.bannerBg }">
       <image v-if="course.cover" class="banner-cover-img" :src="course.cover" mode="aspectFill" @error="course.coverError = true" />
@@ -170,10 +180,11 @@ onMounted(() => {
   const info = uni.getSystemInfoSync()
   const sw = info.screenWidth || 375
   statusBarHeight.value = info.statusBarHeight || 44
-  const bannerH = 480 * sw / 750      // banner 480rpx
-  const overlapH = 40 * sw / 750      // scroll-view 上移 40rpx
+  const navH = 88 * sw / 750           // nav bar ~88rpx
+  const bannerH = 480 * sw / 750       // banner 480rpx
+  const overlapH = 40 * sw / 750       // scroll-view 上移 40rpx
   const stickyH = Math.round(140 * sw / 750) // sticky bar + safe area
-  scrollHeight.value = info.windowHeight - bannerH + overlapH - stickyH
+  scrollHeight.value = info.windowHeight - statusBarHeight.value - navH - bannerH + overlapH - stickyH
 })
 
 const course = ref({
@@ -337,6 +348,10 @@ function selectSlot(id) {
   selectedSlot.value = id
 }
 
+function goBack() {
+  uni.navigateBack()
+}
+
 function toggleFav() {
   isFav.value = !isFav.value
   // Persist to localStorage
@@ -409,6 +424,32 @@ function toBook() {
   overflow-x: hidden;
 }
 
+.status-spacer {
+  background: transparent;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32rpx;
+  height: 88rpx;
+}
+
+.back-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
 /* 渐变 Banner */
 .banner {
   width: 100%;
@@ -419,7 +460,7 @@ function toBook() {
 
 .banner-cover-img {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   width: 100%;
   height: 100%;
   z-index: 0;

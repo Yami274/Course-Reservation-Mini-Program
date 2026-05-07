@@ -154,7 +154,7 @@ function toCourseDetail(item) {
 }
 
 function toCourseList() {
-  uni.switchTab({ url: '/pages/course/list' })
+  uni.reLaunch({ url: '/pages/index/index?tab=1' })
 }
 
 function goBack() {
@@ -288,7 +288,7 @@ function goBack() {
 
 .thumb-img {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   width: 100%;
   height: 100%;
 }

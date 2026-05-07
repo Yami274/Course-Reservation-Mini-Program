@@ -1,5 +1,5 @@
 <template>
-  <view class="page paper-bg">
+  <view class="page paper-bg page-enter">
     <!-- 状态栏占位 -->
     <view :style="{ height: statusBarHeight + 'px' }" />
 
@@ -27,7 +27,7 @@
         </view>
       </view>
 
-      <view class="order-list" v-if="filteredOrders.length > 0">
+      <view class="order-list tab-fade" :key="activeTab" v-if="filteredOrders.length > 0">
         <view
           v-for="order in filteredOrders"
           :key="order.id"
@@ -35,11 +35,8 @@
         >
           <!-- 状态条 -->
           <view class="status-strip" :style="getStatusStrip(order.status)">
-            <view style="display:flex;align-items:center;gap:12rpx;">
-              <view class="status-dot" :style="{ background: getStatusColor(order.status) }" />
-              <text>{{ getStatusText(order.status) }}</text>
-            </view>
-            <text class="order-no">订单 #{{ order.orderNo || order.id }}</text>
+            <view class="status-dot" :style="{ background: getStatusColor(order.status) }" />
+            <text>{{ getStatusText(order.status) }}</text>
           </view>
 
           <!-- 内容体 -->
@@ -108,7 +105,7 @@ import { getOrders, cancelOrder } from '@/api/order.js'
 import { useUserStore } from '@/stores/user.js'
 import { normalizeOrder } from '@/utils/normalize.js'
 import SvgIcon from '@/components/SvgIcon.vue'
-import { useTabbarStore } from '@/stores/tabbar.js'
+
 const statusBarHeight = ref(44)
 const scrollHeight = ref(600)
 const activeTab = ref('all')
@@ -125,7 +122,6 @@ onMounted(() => {
 })
 
 onShow(() => {
-  useTabbarStore().active = 'order'
   loadOrders()
 })
 
@@ -144,9 +140,8 @@ async function loadOrders() {
   }
   loading.value = true
   try {
-    const params = { page: 1, pageSize: 20 }
-    if (activeTab.value !== 'all') params.status = activeTab.value
-    const res = await getOrders(params)
+    // 始终拉取全部订单，客户端按 tab 筛选，保证各状态红点计数准确
+    const res = await getOrders({ page: 1, pageSize: 100 })
     allOrders.value = (res?.list || res || []).map(normalizeOrder)
   } catch(e) {
     console.error('orders error:', e)
@@ -161,7 +156,7 @@ const filteredOrders = computed(() => {
 })
 
 function getCount(key) {
-  if (key === 'all') return 0
+  if (key === 'all') return allOrders.value.length
   return allOrders.value.filter(o => o.status === key).length
 }
 
@@ -193,7 +188,6 @@ function canRebook(status) {
 
 function setTab(key) {
   activeTab.value = key
-  loadOrders()
 }
 function toOrderDetail(order) {
   uni.navigateTo({ url: `/pages/order/detail?id=${order.id}` })
@@ -221,7 +215,7 @@ function handleRebook(order) {
   uni.navigateTo({ url: `/pages/course/detail?id=${order.courseId || 1}` })
 }
 function toCourseList() {
-  uni.switchTab({ url: '/pages/course/list' })
+  uni.reLaunch({ url: '/pages/index/index?tab=1' })
 }
 </script>
 
@@ -242,6 +236,10 @@ function toCourseList() {
   font-size: 34rpx;
   font-weight: 600;
   color: var(--ink);
+}
+
+.seg-btn {
+  position: relative;
 }
 
 .scroll-content {
@@ -265,12 +263,16 @@ function toCourseList() {
 
 /* 状态条 */
 .status-strip {
+  width: 180rpx;
+  min-height: 48rpx;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 20rpx 32rpx;
-  font-size: 24rpx;
+  justify-content: center;
+  border-radius: 12rpx;
+  font-size: 22rpx;
   font-weight: 600;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 .status-dot {
   width: 12rpx;
@@ -350,25 +352,24 @@ function toCourseList() {
 }
 
 .tab-count {
-  display: inline-block;
+  position: absolute;
+  top: 4rpx;
+  left: 6rpx;
   background: var(--primary);
   color: #FFFCF5;
-  font-size: 18rpx;
-  min-width: 28rpx;
-  height: 28rpx;
-  border-radius: 14rpx;
+  font-size: 16rpx;
+  min-width: 24rpx;
+  height: 24rpx;
+  border-radius: 12rpx;
   text-align: center;
-  line-height: 28rpx;
-  padding: 0 6rpx;
-  margin-left: 4rpx;
-  .seg-btn.active & {
-    background: rgba(255,255,255,0.3);
-  }
+  line-height: 24rpx;
+  padding: 0 5rpx;
+  pointer-events: none;
 }
 
 .thumb-img {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   width: 100%;
   height: 100%;
   border-radius: inherit;
