@@ -3,8 +3,9 @@
  * 基于 uni.request 的统一请求工具，支持 JWT 认证、拦截器、加载状态
  */
 
-// 基础配置
+// 基础配置（修改此处即可同时更新 API 地址和图片域名）
 const BASE_URL = 'http://localhost:3000/api'
+export const SERVER_BASE = BASE_URL.replace(/\/api$/, '')
 const TIMEOUT = 15000
 
 // 加载状态管理

@@ -19,12 +19,19 @@ const TAG_STYLES = [
   { bg: '#E8DFF8', color: '#4A2A7A' },
 ]
 
-const IMG_BASE = 'http://localhost:3000'
+import { SERVER_BASE } from '@/utils/request.js'
 
 function resolveImageUrl(url) {
   if (!url) return ''
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-  if (url.startsWith('/')) return IMG_BASE + url
+  // OSS 或其他完整 HTTPS 地址：直接使用
+  if (url.startsWith('https://')) return url
+  // 兼容旧数据：localhost 完整 URL → 替换为当前配置的服务器地址
+  if (url.startsWith('http://')) {
+    const withoutHost = url.replace(/^https?:\/\/[^/]+/, '')
+    return SERVER_BASE + withoutHost
+  }
+  // 相对路径（新上传）
+  if (url.startsWith('/')) return SERVER_BASE + url
   return url
 }
 function pickByIndex(arr, id) {

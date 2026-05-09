@@ -50,18 +50,16 @@ router.post('/', upload.single('file'), async (req, res) => {
         const ext = path.extname(req.file.originalname);
         const filename = `courses/${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
         const result = await ossClient.put(filename, req.file.path);
-        fileUrl = result.url;
-        // 删除本地临时文件
+        fileUrl = result.url; // OSS 返回完整 HTTPS URL，直接使用
         fs.unlink(req.file.path, () => {});
       } catch (ossErr) {
         console.warn('OSS upload failed, fallback to local:', ossErr.message);
-        const relativePath = `/${req.file.path.replace(/\\/g, '/')}`;
-        fileUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
+        // 本地存储：只存相对路径，由客户端拼接域名，避免 localhost 硬编码
+        fileUrl = `/${req.file.path.replace(/\\/g, '/')}`;
       }
     } else {
-      // 本地存储 — 拼接完整访问 URL
-      const relativePath = `/${req.file.path.replace(/\\/g, '/')}`;
-      fileUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
+      // 本地存储：只存相对路径
+      fileUrl = `/${req.file.path.replace(/\\/g, '/')}`;
     }
 
     res.json(success({ url: fileUrl, filename: req.file.filename }, '上传成功'));
