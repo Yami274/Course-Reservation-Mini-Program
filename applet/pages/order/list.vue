@@ -1,5 +1,5 @@
 <template>
-  <view class="page paper-bg page-enter">
+  <view class="page paper-bg">
     <!-- 状态栏占位 -->
     <view :style="{ height: statusBarHeight + 'px' }" />
 
@@ -236,10 +236,6 @@ function toCourseList() {
   font-size: 34rpx;
   font-weight: 600;
   color: var(--ink);
-}
-
-.seg-btn {
-  position: relative;
 }
 
 .scroll-content {

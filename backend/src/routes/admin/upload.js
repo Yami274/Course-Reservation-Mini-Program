@@ -1,4 +1,4 @@
-﻿const router = require('express').Router();
+const router = require('express').Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -55,13 +55,11 @@ router.post('/', upload.single('file'), async (req, res) => {
         fs.unlink(req.file.path, () => {});
       } catch (ossErr) {
         console.warn('OSS upload failed, fallback to local:', ossErr.message);
-        const relativePath = `/${req.file.path.replace(/\\/g, '/')}`;
-        fileUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
+        fileUrl = '/' + req.file.path.replace(/\\/g, '/');
       }
     } else {
-      // 本地存储 — 拼接完整访问 URL
-      const relativePath = `/${req.file.path.replace(/\\/g, '/')}`;
-      fileUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
+      // 本地存储 — 返回相对路径，由前端拼接 API 地址
+      fileUrl = '/' + req.file.path.replace(/\\/g, '/');
     }
 
     res.json(success({ url: fileUrl, filename: req.file.filename }, '上传成功'));

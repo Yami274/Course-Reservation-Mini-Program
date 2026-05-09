@@ -1,5 +1,5 @@
 <template>
-  <view class="page paper-bg page-enter">
+  <view class="page paper-bg">
     <!-- 状态栏占位 -->
     <view :style="{ height: statusBarHeight + 'px' }" />
 
@@ -32,7 +32,6 @@
             <view
               v-for="(tab, i) in tabs"
               :key="tab.key"
-              :id="'ctab-' + tab.key"
               class="tab-item"
               :class="{ active: activeTab === tab.key }"
               @tap="setTab(tab.key)"
@@ -41,7 +40,6 @@
             </view>
           </view>
         </scroll-view>
-        <view class="tab-slider" :style="sliderStyle" />
       </view>
 
       <!-- 副筛选行 -->
@@ -60,7 +58,7 @@
         <view
           v-for="course in filteredCourses"
           :key="course.id"
-          class="course-card card shadow-warm stagger-item"
+          class="course-card card shadow-warm"
           @tap="toCourseDetail(course)"
         >
           <!-- 缩略图 -->
@@ -118,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { getCourses } from '@/api/course.js'
 import { getCategories } from '@/api/home.js'
@@ -130,7 +128,6 @@ onShow(() => {
   if (pending) {
     uni.removeStorageSync('pendingCategory')
     activeTab.value = pending
-    moveSlider()
   }
 })
 
@@ -142,33 +139,6 @@ const loading = ref(false)
 const allCourses = ref([])
 const tabs = ref([{ key: 'all', label: '全部' }])
 const subFilters = ['默认', '最新', '名额', '周末']
-const sliderStyle = ref({})
-
-function moveSlider() {
-  nextTick(() => {
-    uni.createSelectorQuery()
-      .select('#ctab-' + activeTab.value).boundingClientRect()
-      .select('.tab-bar-wrap').boundingClientRect()
-      .exec((res) => {
-        if (res[0] && res[1]) {
-          var tab = res[0]
-          var wrap = res[1]
-          var info = uni.getSystemInfoSync()
-          var rpxRatio = info.screenWidth / 750
-          var w = 40 * rpxRatio
-          var cx = tab.left - wrap.left + tab.width / 2
-          sliderStyle.value = {
-            left: (cx - w / 2) + 'px',
-            width: w + 'px',
-            opacity: 1,
-            transition: 'left 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.2s ease',
-          }
-        }
-      })
-  })
-}
-
-watch(activeTab, () => moveSlider())
 
 const searchIconColor = '#2A2520'
 const searchIconColor2 = '#8A7E70'
@@ -198,7 +168,6 @@ onLoad(async (options) => {
     activeTab.value = options.category
   }
   await loadCourses()
-  moveSlider()
 })
 
 async function loadCourses() {
@@ -303,18 +272,18 @@ function toSearch() {
   &.active {
     font-weight: 700;
     color: var(--ink);
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 40rpx;
+      height: 6rpx;
+      border-radius: 6rpx;
+      background: var(--primary);
+    }
   }
-}
-
-.tab-slider {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 6rpx;
-  border-radius: 6rpx;
-  background: var(--primary);
-  pointer-events: none;
-  opacity: 0;
 }
 
 /* 副筛选 */

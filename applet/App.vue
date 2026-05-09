@@ -321,4 +321,13 @@ view, scroll-view, swiper, swiper-item, image, text, input, button, navigator {
 	font-weight: 600;
 	letter-spacing: 0.02em;
 }
+
+/* ── 内容切换动画 ─────────────────────────────────────────── */
+.tab-fade {
+	animation: fadeIn 0.35s ease both;
+}
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(12rpx); }
+	to   { opacity: 1; transform: translateY(0); }
+}
 </style>

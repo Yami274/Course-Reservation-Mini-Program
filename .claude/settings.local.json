@@ -39,7 +39,8 @@
       "Bash(sed -i '/text-align: center;/{n;s/font-size: 26rpx;/font-size: 26rpx;\\\\n\\\\t\\\\tposition: relative;/}' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
       "Bash(sed -n '300,308p' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
       "Bash(sed -i '/\\\\.seg {/,/^[[:space:]]*}/ { /font-size: 26rpx;/s/;/;\\\\n\\\\t\\\\tposition: relative;/ }' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
-      "Bash(sed -n '284,291p' \"D:/Datas/Desktop/小程序/applet/App.vue\")"
+      "Bash(sed -n '284,291p' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
+      "Bash(git *)"
     ]
   }
 }

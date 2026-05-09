@@ -3,6 +3,8 @@
  * 将后端返回的原始 DB 字段映射成前端模板所需的视图模型字段
  */
 
+import { API_BASE } from './request.js'
+
 const THUMB_COLORS = [
   'linear-gradient(135deg, #F9D9C4, #E8A87C, #D97757)',
   'linear-gradient(135deg, #C7D1B6, #8AAA70, #6B7F5A)',
@@ -19,12 +21,10 @@ const TAG_STYLES = [
   { bg: '#E8DFF8', color: '#4A2A7A' },
 ]
 
-const IMG_BASE = 'http://localhost:3000'
-
 function resolveImageUrl(url) {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  if (url.startsWith('/')) return IMG_BASE + url
+  if (url.startsWith('/')) return API_BASE + url
   return url
 }
 function pickByIndex(arr, id) {

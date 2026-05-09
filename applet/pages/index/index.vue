@@ -1,5 +1,5 @@
 <template>
-  <view class="main-shell page-enter">
+  <view class="main-shell">
     <view :style="{ height: statusH + 'px' }" />
     <view class="mini-nav"><text class="nav-title">{{ navTitle }}</text></view>
     <swiper class="main-swiper" :current="active" :duration="300" @change="onSwipe" :style="{ height: swiperH + 'px' }">

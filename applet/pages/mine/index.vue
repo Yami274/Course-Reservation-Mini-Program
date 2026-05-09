@@ -1,5 +1,5 @@
 <template>
-  <view class="page paper-bg page-enter">
+  <view class="page paper-bg">
     <!-- 状态栏占位 -->
     <view :style="{ height: statusBarHeight + 'px' }" />
 
