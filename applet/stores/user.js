@@ -1,28 +1,42 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { wxLogin } from '@/api/auth.js'
+import { ref } from 'vue'
+import { wxLogin, phoneLogin } from '@/api/auth.js'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(uni.getStorageSync('token') || '')
   const userInfo = ref(JSON.parse(uni.getStorageSync('userInfo') || 'null'))
   const isLoggedIn = ref(!!token.value)
 
-  // 微信登录（开发环境：不传 code）
+  function _persist(tokenVal, userVal) {
+    token.value = tokenVal
+    userInfo.value = userVal
+    isLoggedIn.value = true
+    uni.setStorageSync('token', tokenVal)
+    uni.setStorageSync('userInfo', JSON.stringify(userVal))
+  }
+
+  // 微信一键登录：调用 uni.login 获取 code → 后端换 openid → JWT
+  async function loginByWechat() {
+    const { code } = await uni.login()
+    const res = await wxLogin({ code })
+    _persist(res.token, res.user)
+    return res
+  }
+
+  // 手机号一键登录：由 <button open-type="getPhoneNumber"> 回调触发
+  // code 是新版手机号 API 的凭证（base library 2.21.2+）
+  // encryptedData/iv 是旧版解密参数（兼容备用）
+  async function loginByPhone({ code, encryptedData, iv }) {
+    const res = await phoneLogin({ code, encryptedData, iv })
+    _persist(res.token, res.user)
+    return res
+  }
+
+  // 开发模式快速登录（后端未配置微信凭据时使用）
   async function login(nickname = '测试用户', avatar = '') {
-    try {
-      // 生产环境要先调用 wx.login 获取 code
-      // const { code } = await uni.login()
-      const res = await wxLogin({ nickname, avatar })
-      token.value = res.token
-      userInfo.value = res.user
-      isLoggedIn.value = true
-      uni.setStorageSync('token', res.token)
-      uni.setStorageSync('userInfo', JSON.stringify(res.user))
-      return res
-    } catch(e) {
-      console.error('Login failed:', e)
-      throw e
-    }
+    const res = await wxLogin({ nickname, avatar })
+    _persist(res.token, res.user)
+    return res
   }
 
   function logout() {
@@ -42,8 +56,8 @@ export const useUserStore = defineStore('user', () => {
     const u = uni.getStorageSync('userInfo')
     if (t) { token.value = t; isLoggedIn.value = true }
     else { token.value = ''; isLoggedIn.value = false }
-    if (u) { try { userInfo.value = JSON.parse(u) } catch(_) {} }
+    if (u) { try { userInfo.value = JSON.parse(u) } catch (_) {} }
   }
 
-  return { token, userInfo, isLoggedIn, login, logout, getToken, initFromStorage }
+  return { token, userInfo, isLoggedIn, login, loginByWechat, loginByPhone, logout, getToken, initFromStorage }
 })

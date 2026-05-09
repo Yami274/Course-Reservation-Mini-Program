@@ -39,7 +39,14 @@
       "Bash(sed -i '/text-align: center;/{n;s/font-size: 26rpx;/font-size: 26rpx;\\\\n\\\\t\\\\tposition: relative;/}' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
       "Bash(sed -n '300,308p' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
       "Bash(sed -i '/\\\\.seg {/,/^[[:space:]]*}/ { /font-size: 26rpx;/s/;/;\\\\n\\\\t\\\\tposition: relative;/ }' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
-      "Bash(sed -n '284,291p' \"D:/Datas/Desktop/小程序/applet/App.vue\")"
+      "Bash(sed -n '284,291p' \"D:/Datas/Desktop/小程序/applet/App.vue\")",
+      "Bash(Select-Object FullName)",
+      "Bash(bash \"C:/Users/17315/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/brainstorming/scripts/start-server.sh\" --project-dir \"D:/Datas/Desktop/小程序/.claude/worktrees/stupefied-stonebraker-763793\")",
+      "Bash(xxd \"D:/Datas/Desktop/小程序/.claude/worktrees/stupefied-stonebraker-763793/design-file.html\")",
+      "Bash(cp design-file.html design-file.html.gz)",
+      "Bash(gunzip -c design-file.html.gz)",
+      "Bash(mkdir -p design-extracted)",
+      "Bash(tar -xzf design-file.html -C design-extracted)"
     ]
   }
 }
